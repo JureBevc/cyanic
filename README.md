@@ -3,9 +3,10 @@ A tool for simple blue-green deployment
 
 # Run
 ```
-go run . run ./examples/example-config.yaml
+sudo go run . deploy-staging ./examples/dummy.yaml
 ```
-Or if compiled:
+
+Check command:
 ```
-./cyanic run ./examples/example-config.yaml
+repeat 9999 (curl -s -o /dev/null -w "%{http_code}\n" localhost; sleep 0.5;)
 ```

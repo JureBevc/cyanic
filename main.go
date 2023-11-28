@@ -26,6 +26,12 @@ func handleAction(stepConfig handlers.StepConfig, action string) {
 	case "deploy-production":
 		handlers.HandleDeployProduction(stepConfig)
 
+	case "remove-staging":
+		handlers.HandleRemoveStaging(stepConfig)
+
+	case "remove-production":
+		handlers.HandleRemoveProduction(stepConfig)
+
 	case "swap":
 		handlers.HandleSwap(stepConfig)
 
@@ -40,12 +46,45 @@ func handleAction(stepConfig handlers.StepConfig, action string) {
 	}
 }
 
-func runConfig(action string, params []string) {
-	if len(params) == 0 {
-		fmt.Println("Not enough parameters")
+func handleNonConfigActions(action string, params []string) bool {
+
+	switch action {
+	case "kill-port":
+		requireParamCount(params, 1)
+		handlers.KillProcessOnPort(params[0])
+		return true
 	}
 
-	configFilePath := params[0]
+	return false
+}
+
+func requireParamCount(params []string, count int) {
+	if len(params) < count {
+		fmt.Printf("Not enough parameters (required %d got %d)\n", count, len(params))
+		os.Exit(1)
+	}
+}
+
+var defaultConfigPath string = "./cyanic.yaml"
+
+func runConfig(action string, params []string) {
+
+	if handleNonConfigActions(action, params) {
+		return
+	}
+
+	configFilePath := ""
+	if handlers.FileExists(defaultConfigPath) {
+		configFilePath = defaultConfigPath
+	} else {
+		requireParamCount(params, 1)
+		configFilePath = params[0]
+	}
+
+	if configFilePath == "" {
+		fmt.Println("No valid configuration path found")
+		os.Exit(1)
+	}
 
 	content, err := os.ReadFile(configFilePath)
 

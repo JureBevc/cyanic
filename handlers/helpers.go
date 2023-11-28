@@ -38,7 +38,17 @@ func createFile(filePath string) {
 
 }
 
-func deleteNginxConfig(configName string){
+func FileExists(filePath string) bool {
+	if _, err := os.Stat(filePath); err == nil {
+		return true
+	} else if os.IsNotExist(err) {
+		return false
+	} else {
+		return false
+	}
+}
+
+func deleteNginxConfig(configName string) {
 	filePath := filepath.Join(nginxSitesPath, configName)
 	os.Remove(filePath)
 }
@@ -122,11 +132,12 @@ func testNginx() error {
 }
 
 func restartNginx() error {
-	err := exec.Command("sudo", "systemctl", "restart", "nginx").Run()
+	//err := exec.Command("sudo", "systemctl", "restart", "nginx").Run()
+	err := exec.Command("sudo", "nginx", "-s", "reload").Run()
 	return err
 }
 
-func killProcessOnPort(portString string) error {
+func KillProcessOnPort(portString string) error {
 	err := exec.Command("sudo", "fuser", "-k", "-n", "tcp", portString).Run()
 	return err
 }

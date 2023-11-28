@@ -75,7 +75,7 @@ func HandleDeployStaging(conf StepConfig) error {
 	stagingPort := getPortInNginxConfig(conf.Staging.UniqueName)
 	fmt.Printf("Existing staging port: %s\n", stagingPort)
 	if stagingPort != "" {
-		err := killProcessOnPort(stagingPort)
+		err := KillProcessOnPort(stagingPort)
 		if err != nil {
 			fmt.Printf("Could not kill process on port %s\n", stagingPort)
 			fmt.Println(err)
@@ -119,6 +119,50 @@ func HandleDeployStaging(conf StepConfig) error {
 	// Restart nginx
 	fmt.Println("Restarting nginx...")
 	err = restartNginx()
+
+	return err
+}
+
+func HandleRemoveStaging(conf StepConfig) error {
+	fmt.Println("Killing existing process...")
+	stagingPort := getPortInNginxConfig(conf.Staging.UniqueName)
+	fmt.Printf("Existing staging port: %s\n", stagingPort)
+	if stagingPort != "" {
+		err := KillProcessOnPort(stagingPort)
+		if err != nil {
+			fmt.Printf("Could not kill process on port %s\n", stagingPort)
+			fmt.Println(err)
+		}
+	}
+
+	// Remove config
+	deleteNginxConfig(conf.Staging.UniqueName)
+
+	// Restart nginx
+	fmt.Println("Restarting nginx...")
+	err := restartNginx()
+
+	return err
+}
+
+func HandleRemoveProduction(conf StepConfig) error {
+	fmt.Println("Killing existing process...")
+	prodPort := getPortInNginxConfig(conf.Production.UniqueName)
+	fmt.Printf("Existing staging port: %s\n", prodPort)
+	if prodPort != "" {
+		err := KillProcessOnPort(prodPort)
+		if err != nil {
+			fmt.Printf("Could not kill process on port %s\n", prodPort)
+			fmt.Println(err)
+		}
+	}
+
+	// Remove config
+	deleteNginxConfig(conf.Production.UniqueName)
+
+	// Restart nginx
+	fmt.Println("Restarting nginx...")
+	err := restartNginx()
 
 	return err
 }
