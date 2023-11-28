@@ -19,3 +19,9 @@
 
 # Go workspace file
 go.work
+
+# Node modules
+examples/npm-server/node_modules
+
+# Cyanic
+cyanic-scripts/

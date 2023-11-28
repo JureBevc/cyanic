@@ -1,0 +1,16 @@
+{
+  "name": "npm-server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "serve": "node index.js",
+    "serve:prod": "PORT=3000 node index.js",
+    "serve:staging": "PORT=4000 node index.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
