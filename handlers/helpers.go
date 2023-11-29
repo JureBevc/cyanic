@@ -144,13 +144,14 @@ func runSetup(setupCommands []string, deployPort string) {
 	// Create and open script file
 	scriptFilePath := "./cyanic-scripts/tmp.sh"
 
+	createFile(scriptFilePath)
+
 	err := os.Chmod(scriptFilePath, 0755)
 	if err != nil {
 		slog.Error("Error changing file permissions", "msg", err.Error())
 		return
 	}
 
-	createFile(scriptFilePath)
 	shFile, err := os.Create(scriptFilePath)
 
 	if err != nil {
