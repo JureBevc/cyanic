@@ -2,11 +2,18 @@
 A tool for simple blue-green deployment
 
 # Run
+Using the default config location:
 ```
-sudo go run . deploy-staging ./examples/dummy.yaml
+sudo go run . deploy-staging
 ```
 
-Check command:
+Using custom config location:
 ```
-repeat 9999 (curl -s -o /dev/null -w "%{http_code}\n" localhost; sleep 0.5;)
+sudo go run . deploy-staging ./path/to/cyanic/config.yaml
+```
+
+# Misc
+Check command port:
+```
+repeat 9999 (curl -s -o /dev/null -w "%{http_code}\n" localhost:80; sleep 0.5;)
 ```

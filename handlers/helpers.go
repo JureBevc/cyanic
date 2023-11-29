@@ -3,6 +3,7 @@ package handlers
 import (
 	"fmt"
 	"io/fs"
+	"log/slog"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -16,7 +17,7 @@ func createFile(filePath string) {
 
 	// Create directories if they don't exist
 	if err := os.MkdirAll(dir, os.ModePerm); err != nil {
-		fmt.Println("Error creating directories:", err)
+		slog.Error("Error creating directories:", "msg", err.Error())
 		return
 	}
 
@@ -25,15 +26,15 @@ func createFile(filePath string) {
 		// File does not exist, create it
 		file, err := os.Create(filePath)
 		if err != nil {
-			fmt.Println("Error creating file:", err)
+			slog.Error("Error creating file:", "msg", err.Error())
 			return
 		}
 		defer file.Close()
 
-		fmt.Println("File created:", filePath)
+		slog.Info("File created:", "path", filePath)
 	} else {
 		// File already exists
-		// fmt.Println("File already exists:", filePath)
+		slog.Debug("File already exists:", "path", filePath)
 	}
 
 }
@@ -115,7 +116,8 @@ func createNginxConfig(templatePath string, configName string, proxyPort string)
 	templateContent, err := os.ReadFile(templatePath)
 
 	if err != nil {
-		fmt.Printf("Could not read template file %s\n", templatePath)
+		slog.Error("Could not read template file", "path", templatePath)
+		slog.Error(err.Error())
 		return err
 	}
 
@@ -137,7 +139,43 @@ func restartNginx() error {
 	return err
 }
 
-func KillProcessOnPort(portString string) error {
-	err := exec.Command("sudo", "fuser", "-k", "-n", "tcp", portString).Run()
-	return err
+func runSetup(setupCommands []string, deployPort string) {
+
+	// Create and open script file
+	scriptFilePath := "./cyanic-scripts/tmp.sh"
+
+	err := os.Chmod(scriptFilePath, 0755)
+	if err != nil {
+		slog.Error("Error changing file permissions", "msg", err.Error())
+		return
+	}
+
+	createFile(scriptFilePath)
+	shFile, err := os.Create(scriptFilePath)
+
+	if err != nil {
+		slog.Error("Error opening file", "msg", err.Error())
+		return
+	}
+
+	shFile.WriteString("#!/bin/sh -ex\n")
+	shFile.WriteString("export PORT=" + deployPort + "\n")
+
+	// Create script content
+	for _, line := range setupCommands {
+		_, err := shFile.WriteString(line + "\n")
+		if err != nil {
+			slog.Error("Error writting line", "msg", err.Error())
+		}
+	}
+
+	shFile.Close()
+
+	// Run script file
+	var commandError error
+	commandError = exec.Command(scriptFilePath, "&", "disown").Start()
+	if commandError != nil {
+		slog.Error("Error running setup script")
+		slog.Error(commandError.Error())
+	}
 }

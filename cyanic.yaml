@@ -8,11 +8,11 @@ cyanic:
     - 8004
   production:
     unique-name: my-npm-production
-    nginx: ./examples/prod-nginx.conf
+    nginx: ./examples/npm-server/prod-nginx.conf
     health-check-url: www.example.com/health
   staging:
     unique-name: my-npm-staging
-    nginx: ./examples/staging-nginx.conf
+    nginx: ./examples/npm-server/staging-nginx.conf
     health-check-url: www.staging.example.com/health
   setup:
     - echo "Deploying to port $PORT..."

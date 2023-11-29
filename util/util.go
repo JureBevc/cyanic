@@ -2,16 +2,18 @@ package util
 
 import (
 	"encoding/json"
-	"fmt"
-	"log"
+	"log/slog"
 )
 
-func PrintStruct(s interface{}) {
+func StructToString(s interface{}) string {
 
 	empJSON, err := json.MarshalIndent(s, "", "  ")
 	if err != nil {
-		log.Fatalf(err.Error())
+		slog.Error("Could not marshal struct to json string")
+		slog.Error(err.Error())
+		return ""
 	}
-	fmt.Printf("%s\n", string(empJSON))
+
+	return string(empJSON)
 
 }

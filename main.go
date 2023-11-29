@@ -1,21 +1,26 @@
 package main
 
 import (
-	"JureBevc/cyanic/handlers"
 	"fmt"
+	"log/slog"
 	"os"
 
+	"github.com/JureBevc/cyanic/handlers"
+	"github.com/JureBevc/cyanic/util"
 	"github.com/goccy/go-yaml"
 )
 
 func printHelp() {
 	fmt.Println("Available commands:")
-	fmt.Println("\tcyanic help")
-	fmt.Println("\tcyanic run [file]")
+	fmt.Println("\t help")
+	fmt.Println("\t deploy-staging [path-to-config]")
+	fmt.Println("\t swap [path-to-config]")
+	fmt.Println("\t remove-staging [path-to-config]")
+	fmt.Println("\t remove-production [path-to-config]")
 }
 
 func handleAction(stepConfig handlers.StepConfig, action string) {
-	fmt.Printf("-- RUNNING ACTION %s --\n", action)
+	slog.Info("Running cyanic", "action", action)
 	switch action {
 	case "full-deploy":
 		handlers.HandleFullDeploy(stepConfig)
@@ -42,7 +47,7 @@ func handleAction(stepConfig handlers.StepConfig, action string) {
 		handlers.HandleHealthCheckProduction(stepConfig)
 
 	default:
-		fmt.Printf("Invalid action '%s'\n", action)
+		slog.Error("Invalid action", "name", action)
 	}
 }
 
@@ -60,7 +65,7 @@ func handleNonConfigActions(action string, params []string) bool {
 
 func requireParamCount(params []string, count int) {
 	if len(params) < count {
-		fmt.Printf("Not enough parameters (required %d got %d)\n", count, len(params))
+		slog.Error("Not enough parameters", "required", count, "got", len(params))
 		os.Exit(1)
 	}
 }
@@ -82,27 +87,27 @@ func runConfig(action string, params []string) {
 	}
 
 	if configFilePath == "" {
-		fmt.Println("No valid configuration path found")
+		slog.Error("No valid configuration path found")
 		os.Exit(1)
 	}
 
 	content, err := os.ReadFile(configFilePath)
 
 	if err != nil {
-		fmt.Printf("Could not read configuration file:")
-		fmt.Printf("%s\n", err)
+		slog.Error("Could not read configuration file:")
+		slog.Error(err.Error())
 		return
 	}
 
 	cyConfig := handlers.CyanicConfig{}
 
 	if err = yaml.Unmarshal(content, &cyConfig); err != nil {
-		fmt.Println("Error parsing configuration file:")
-		fmt.Printf("%s\n", err)
+		slog.Error("Error parsing configuration file:")
+		slog.Error(err.Error())
 		return
 	}
 
-	//util.PrintStruct(cyConfig)
+	slog.Debug(util.StructToString(cyConfig))
 
 	handleAction(cyConfig.Step, action)
 }
