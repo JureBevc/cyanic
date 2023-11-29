@@ -25,3 +25,4 @@ examples/npm-server/node_modules
 
 # Cyanic
 cyanic-scripts/
+release/
