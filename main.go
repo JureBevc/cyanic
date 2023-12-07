@@ -46,6 +46,9 @@ func handleAction(stepConfig handlers.StepConfig, action string) {
 	case "check-production":
 		handlers.HandleHealthCheckProduction(stepConfig)
 
+	case "status":
+		handlers.HandleStatus(stepConfig)
+
 	default:
 		slog.Error("Invalid action", "name", action)
 	}
@@ -123,6 +126,7 @@ func main() {
 	switch command {
 	case "help":
 		printHelp()
+
 	default:
 		runConfig(command, os.Args[2:])
 	}

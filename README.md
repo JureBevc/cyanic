@@ -1,5 +1,5 @@
 # Cyanic 
-Simple Blue-Green Deployment Tool
+Blue-Green Deployment Tool
 
 ## Overview
 

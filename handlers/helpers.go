@@ -180,3 +180,13 @@ func runSetup(setupCommands []string, deployPort string) {
 		slog.Error(commandError.Error())
 	}
 }
+
+func IsProcessRunningOnPort(portString string) bool {
+	err := exec.Command("sudo", "fuser", portString+"/tcp").Run()
+	return err != nil
+}
+
+func KillProcessOnPort(portString string) error {
+	err := exec.Command("sudo", "fuser", "-k", "-n", "tcp", portString).Run()
+	return err
+}

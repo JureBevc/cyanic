@@ -2,12 +2,26 @@ package handlers
 
 import (
 	"errors"
+	"fmt"
 	"log/slog"
-	"os/exec"
 	"strconv"
 )
 
+func HandleStatus(conf StepConfig) {
+	for _, port := range conf.Ports {
+		portString := strconv.Itoa(port)
+		runningOnPort := IsProcessRunningOnPort(portString)
+		portStatus := "Offline"
+		if runningOnPort {
+			portStatus = "Online"
+		}
+		infoString := fmt.Sprintf("Status of port %s: %s\n", portString, portStatus)
+		slog.Info(infoString)
+	}
+}
+
 func HandleFullDeploy(conf StepConfig) {
+	// Does a deploy to staging, and swap after successful health check
 
 }
 
@@ -167,18 +181,13 @@ func HandleRemoveProduction(conf StepConfig) error {
 }
 
 func HandleDeployProduction(conf StepConfig) {
-
+	// Deploy directly to production
 }
 
 func HandleHealthCheckStaging(conf StepConfig) {
-
+	// Continuously checks the health of staging
 }
 
 func HandleHealthCheckProduction(conf StepConfig) {
-
-}
-
-func KillProcessOnPort(portString string) error {
-	err := exec.Command("sudo", "fuser", "-k", "-n", "tcp", portString).Run()
-	return err
+	// Continuously checks the health of production
 }

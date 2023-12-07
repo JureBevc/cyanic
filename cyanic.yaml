@@ -4,8 +4,6 @@ cyanic:
   ports:
     - 8001
     - 8002
-    - 8003
-    - 8004
   production:
     unique-name: my-npm-production
     nginx: ./examples/npm-server/prod-nginx.conf
