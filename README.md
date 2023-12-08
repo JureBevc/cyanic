@@ -1,9 +1,18 @@
 # Cyanic 
+![GitHub tag](https://img.shields.io/github/v/tag/JureBevc/cyanic)
+![GitHub release](https://img.shields.io/github/v/release/JureBevc/cyanic)
+![GitHub Workflow Status (with event)](https://img.shields.io/github/actions/workflow/status/JureBevc/cyanic/unit_tests.yml?label=tests)
+![Static Badge](https://img.shields.io/badge/license-MIT-blue)
+
+
+
 Blue-Green Deployment Tool
 
 ## Overview
 
-Cyanic is a lightweight and easy-to-use tool written in Go for automating  blue-green deployments. With Cyanic, you can seamlessly deploy your application to staging and production environments, perform swaps between the environments without downtime, and remove deployments when needed. It is designed with simplicity in mind, making it particularly suitable for small to medium-sized apps or your personal proof of concept deployments.
+Cyanic is a lightweight and easy-to-use tool written in Go for automating [blue-green](https://en.wikipedia.org/wiki/Blue%e2%80%93green_deployment) deployments. With Cyanic, you can seamlessly deploy your application to staging and production environments, perform swaps between the environments without downtime, and remove deployments when needed. It is designed with simplicity in mind, making it particularly suitable for small to medium-sized apps or your personal proof of concept deployments.
+
+This tool proves particularly advantageous for users who do not utilize Docker and seek a straightforward deployment solution behind an Nginx proxy.
 
 ## Installation
 
