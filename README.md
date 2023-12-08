@@ -3,8 +3,7 @@ Blue-Green Deployment Tool
 
 ## Overview
 
-Cyanic is a lightweight and easy-to-use tool written in Go for automating simple blue-green deployments. With Cyanic, you can seamlessly deploy your application to staging and production environments, perform swaps between the environments without downtime, and remove deployments when needed. It is designed with simplicity in mind, making it particularly suitable for small to medium-sized apps or your personal proof of concept deployments.
-
+Cyanic is a lightweight and easy-to-use tool written in Go for automating  blue-green deployments. With Cyanic, you can seamlessly deploy your application to staging and production environments, perform swaps between the environments without downtime, and remove deployments when needed. It is designed with simplicity in mind, making it particularly suitable for small to medium-sized apps or your personal proof of concept deployments.
 
 ## Installation
 

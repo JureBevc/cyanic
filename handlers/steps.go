@@ -198,8 +198,60 @@ func HandleRemoveProduction(conf StepConfig) error {
 	return err
 }
 
-func HandleDeployProduction(conf StepConfig) {
+func HandleDeployProduction(conf StepConfig) error {
 	// Deploy directly to production
+	// Get existing production port
+	// Shutdown existing process listening on production port
+	slog.Info("Killing existing process")
+	productionPort := getPortInNginxConfig(conf.Production.UniqueName)
+	slog.Info("Existing production port", "value", productionPort)
+	if productionPort != "" {
+		err := KillProcessOnPort(productionPort)
+		if err != nil {
+			slog.Error("Could not kill process on port", "value", productionPort)
+			slog.Error(err.Error())
+		}
+	}
+
+	// Get existing staging port
+	// Choose any other available port as production port
+	slog.Info("Setting deploy port")
+	prodPort := getPortInNginxConfig(conf.Staging.UniqueName)
+
+	deployPort := productionPort
+	if deployPort == "" {
+		for _, port := range conf.Ports {
+			portStr := strconv.Itoa(port)
+			if portStr != prodPort {
+				deployPort = portStr
+				break
+			}
+		}
+	}
+
+	if deployPort == "" {
+		return errors.New("Could not define a valid port for deployment")
+	}
+
+	slog.Info("Chose port", "value", deployPort)
+	// Create nginx config
+	slog.Info("Creating nginx config")
+	err := createNginxConfig(conf.Production.Nginx, conf.Production.UniqueName, deployPort)
+	if err != nil {
+		slog.Error("Could not create nginx config")
+		slog.Error(err.Error())
+		return err
+	}
+
+	// Run setup to start server on chosen production port
+	slog.Info("Running setup")
+	runSetup(conf.Setup, deployPort)
+
+	// Restart nginx
+	slog.Info("Restarting nginx")
+	err = restartNginx()
+
+	return err
 }
 
 func HandleHealthCheckStaging(conf StepConfig) bool {
