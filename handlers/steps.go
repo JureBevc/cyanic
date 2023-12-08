@@ -4,13 +4,15 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"os/exec"
 	"strconv"
+	"strings"
 )
 
-func HandleStatus(conf StepConfig) {
+func HandlePortStatus(conf StepConfig) {
 	for _, port := range conf.Ports {
 		portString := strconv.Itoa(port)
-		runningOnPort := IsProcessRunningOnPort(portString)
+		runningOnPort := isProcessRunningOnPort(portString)
 		portStatus := "Offline"
 		if runningOnPort {
 			portStatus = "Online"
@@ -22,7 +24,23 @@ func HandleStatus(conf StepConfig) {
 
 func HandleFullDeploy(conf StepConfig) {
 	// Does a deploy to staging, and swap after successful health check
+	// If health check for production fails after swap, the swap is reversed
+	HandleDeployStaging(conf)
+	stagingHealth := HandleHealthCheckStaging(conf)
+	if !stagingHealth {
+		slog.Error("Aborting full deploy: Failed staging health check")
+		return
+	}
 
+	HandleSwap(conf)
+	productionHealth := HandleHealthCheckProduction(conf)
+	if !productionHealth {
+		slog.Error("Aborting full deploy and reversing swap: Failed production health check")
+		HandleSwap(conf)
+		return
+	}
+
+	slog.Info("Production health OK. Full deploy finished.")
 }
 
 func HandleSwap(conf StepConfig) {
@@ -184,10 +202,65 @@ func HandleDeployProduction(conf StepConfig) {
 	// Deploy directly to production
 }
 
-func HandleHealthCheckStaging(conf StepConfig) {
+func HandleHealthCheckStaging(conf StepConfig) bool {
 	// Continuously checks the health of staging
+	if conf.Staging.HealthCheckUrl == "" {
+		slog.Error("Staging health check url not set")
+		return false
+	}
+
+	stagingPort := getPortInNginxConfig(conf.Staging.UniqueName)
+	if stagingPort == "" {
+		slog.Error("No active port found for staging")
+		return false
+	}
+
+	formattedUrl := strings.ReplaceAll(conf.Staging.HealthCheckUrl, "${PORT}", stagingPort)
+
+	health, err := healthCheckPromise(formattedUrl).Await()
+	if err != nil {
+		slog.Error("Error checking health check:")
+		slog.Error(err.Error())
+		return false
+	}
+	if health {
+		slog.Info("Staging health check: PASS")
+	} else {
+		slog.Info("Staging health check: FAIL")
+	}
+	return health
 }
 
-func HandleHealthCheckProduction(conf StepConfig) {
+func HandleHealthCheckProduction(conf StepConfig) bool {
 	// Continuously checks the health of production
+	if conf.Production.HealthCheckUrl == "" {
+		slog.Error("Production health check url not set")
+		return false
+	}
+
+	productionPort := getPortInNginxConfig(conf.Production.UniqueName)
+	if productionPort == "" {
+		slog.Error("No active port found for production")
+		return false
+	}
+
+	formattedUrl := strings.ReplaceAll(conf.Production.HealthCheckUrl, "${PORT}", productionPort)
+
+	health, err := healthCheckPromise(formattedUrl).Await()
+	if err != nil {
+		slog.Error("Error checking health check:")
+		slog.Error(err.Error())
+		return false
+	}
+	if health {
+		slog.Info("Production health check: PASS")
+	} else {
+		slog.Info("Production health check: FAIL")
+	}
+	return health
+}
+
+func KillProcessOnPort(portString string) error {
+	err := exec.Command("sudo", "fuser", "-k", "-n", "tcp", portString).Run()
+	return err
 }

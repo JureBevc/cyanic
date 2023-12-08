@@ -7,11 +7,11 @@ cyanic:
   production:
     unique-name: my-npm-production
     nginx: ./examples/npm-server/prod-nginx.conf
-    health-check-url: www.example.com/health
+    health-check-url: http://localhost:${PORT}/health
   staging:
     unique-name: my-npm-staging
     nginx: ./examples/npm-server/staging-nginx.conf
-    health-check-url: www.staging.example.com/health
+    health-check-url: http://localhost:${PORT}/health
   setup:
     - echo "Deploying to port $PORT..."
     - cd ./examples/npm-server

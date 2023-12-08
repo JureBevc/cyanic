@@ -4,10 +4,14 @@ import (
 	"fmt"
 	"io/fs"
 	"log/slog"
+	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"time"
+
+	"github.com/JureBevc/cyanic/promise"
 )
 
 func createFile(filePath string) {
@@ -181,12 +185,34 @@ func runSetup(setupCommands []string, deployPort string) {
 	}
 }
 
-func IsProcessRunningOnPort(portString string) bool {
+func isProcessRunningOnPort(portString string) bool {
 	err := exec.Command("sudo", "fuser", portString+"/tcp").Run()
 	return err != nil
 }
 
-func KillProcessOnPort(portString string) error {
-	err := exec.Command("sudo", "fuser", "-k", "-n", "tcp", portString).Run()
-	return err
+func healthCheckPromise(healthCheckUrl string) *promise.Promise[bool] {
+
+	numberOfTries := 60
+
+	p := promise.NewPromise[bool](func() (bool, error) {
+		tryCount := 0
+		for tryCount < numberOfTries {
+			tryCount += 1
+			resp, err := http.Get(healthCheckUrl)
+			if err != nil {
+				slog.Info("Health check: " + err.Error())
+			} else {
+				slog.Info("Health check: Response code " + resp.Status)
+				if resp.StatusCode == 200 {
+					return true, nil
+				}
+			}
+
+			time.Sleep(time.Second * 1)
+		}
+
+		return false, nil
+	})
+
+	return p
 }

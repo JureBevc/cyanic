@@ -15,5 +15,4 @@ func StructToString(s interface{}) string {
 	}
 
 	return string(empJSON)
-
 }

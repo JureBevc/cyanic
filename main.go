@@ -13,10 +13,13 @@ import (
 func printHelp() {
 	fmt.Println("Available commands:")
 	fmt.Println("\t help")
+	fmt.Println("\t port-status [path-to-config]")
 	fmt.Println("\t deploy-staging [path-to-config]")
 	fmt.Println("\t swap [path-to-config]")
 	fmt.Println("\t remove-staging [path-to-config]")
 	fmt.Println("\t remove-production [path-to-config]")
+	fmt.Println("\t health-staging [path-to-config]")
+	fmt.Println("\t health-production [path-to-config]")
 }
 
 func handleAction(stepConfig handlers.StepConfig, action string) {
@@ -40,14 +43,14 @@ func handleAction(stepConfig handlers.StepConfig, action string) {
 	case "swap":
 		handlers.HandleSwap(stepConfig)
 
-	case "check-staging":
+	case "health-staging":
 		handlers.HandleHealthCheckStaging(stepConfig)
 
-	case "check-production":
+	case "health-production":
 		handlers.HandleHealthCheckProduction(stepConfig)
 
-	case "status":
-		handlers.HandleStatus(stepConfig)
+	case "port-status":
+		handlers.HandlePortStatus(stepConfig)
 
 	default:
 		slog.Error("Invalid action", "name", action)
@@ -57,10 +60,16 @@ func handleAction(stepConfig handlers.StepConfig, action string) {
 func handleNonConfigActions(action string, params []string) bool {
 
 	switch action {
+
 	case "kill-port":
 		requireParamCount(params, 1)
 		handlers.KillProcessOnPort(params[0])
 		return true
+
+	case "help":
+		printHelp()
+		return true
+
 	}
 
 	return false
@@ -123,12 +132,5 @@ func main() {
 	}
 
 	command := os.Args[1]
-	switch command {
-	case "help":
-		printHelp()
-
-	default:
-		runConfig(command, os.Args[2:])
-	}
-
+	runConfig(command, os.Args[2:])
 }
