@@ -1,0 +1,21 @@
+cyanic:
+  clone: null # Does the repo need to be cloned first
+  ssh: null # Do we deploy over ssh
+  ports:
+    - 8001
+    - 8002
+  production:
+    unique-name: my-python-production
+    nginx: ./examples/python-server/prod-nginx.conf
+    health-check-url: http://localhost:${PORT}/health
+  staging:
+    unique-name: my-python-staging
+    nginx: ./examples/python-server/staging-nginx.conf
+    health-check-url: http://localhost:${PORT}/health
+  setup:
+    - echo "Deploying to port $PORT..."
+    - cd ./examples/python-server
+    - python3 -m venv .venv
+    - source .venv/bin/activate
+    - pip install -r requirements.txt
+    - python app.py

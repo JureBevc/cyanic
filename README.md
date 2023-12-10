@@ -78,6 +78,12 @@ Show the status of ports listed in the configuration:
 cyanic port-status
 ```
 
+## How it works
+
+This diagram shows a high level overview of all the steps taken when doing an automatic deploy via `cyanic full-deploy`.
+
+![full-deploy-diagram](./diagram.png)
+
 ## Configuration
 
 Cyanic uses a configuration file (cyanic.yaml by default) for specifying deployment settings. Make sure to configure the file according to your application's requirements.

@@ -1,0 +1,20 @@
+cyanic:
+  clone: null # Does the repo need to be cloned first
+  ssh: null # Do we deploy over ssh
+  ports:
+    - 8001
+    - 8002
+  production:
+    unique-name: my-npm-production
+    nginx: ./examples/npm-server/invalid-path-nginx
+    health-check-url: http://localhost:${PORT}/health
+  staging:
+    unique-name: my-npm-staging
+    nginx: ./examples/npm-server/invalid-path-nginx.conf
+    health-check-url: http://localhost:${PORT}/health
+  setup:
+    - echo "Deploying to port $PORT..."
+    - cd ./examples/npm-server
+    - npm install
+    - sleep 3
+    - npm run serve

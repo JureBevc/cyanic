@@ -22,28 +22,33 @@ func HandlePortStatus(conf StepConfig) {
 	}
 }
 
-func HandleFullDeploy(conf StepConfig) {
+func HandleFullDeploy(conf StepConfig) error {
 	// Does a deploy to staging, and swap after successful health check
 	// If health check for production fails after swap, the swap is reversed
 	HandleDeployStaging(conf)
 	stagingHealth := HandleHealthCheckStaging(conf)
 	if !stagingHealth {
 		slog.Error("Aborting full deploy: Failed staging health check")
-		return
+		return errors.New("Staging health check failed")
 	}
 
-	HandleSwap(conf)
+	err := HandleSwap(conf)
+	if err != nil {
+		return err
+	}
+
 	productionHealth := HandleHealthCheckProduction(conf)
 	if !productionHealth {
 		slog.Error("Aborting full deploy and reversing swap: Failed production health check")
 		HandleSwap(conf)
-		return
+		return errors.New("Production health check failed")
 	}
 
 	slog.Info("Production health OK. Full deploy finished.")
+	return nil
 }
 
-func HandleSwap(conf StepConfig) {
+func HandleSwap(conf StepConfig) error {
 	// Check existing production and staging ports
 	slog.Info("Reading existing configurations")
 	stagingPort := getPortInNginxConfig(conf.Staging.UniqueName)
@@ -54,7 +59,7 @@ func HandleSwap(conf StepConfig) {
 	// Continue only if both ports exists, or if only staging exists
 	if stagingPort == "" {
 		slog.Error("Cannot swap, staging port not found")
-		return
+		return errors.New("Staging port not found")
 	}
 
 	// Overwrite config files of production and staging with swapped ports
@@ -64,7 +69,7 @@ func HandleSwap(conf StepConfig) {
 	if err != nil {
 		slog.Error("Could not create configuration for production")
 		slog.Error(err.Error())
-		return
+		return err
 	}
 
 	// Create staging config with production port, if port exists
@@ -74,7 +79,7 @@ func HandleSwap(conf StepConfig) {
 		if err != nil {
 			slog.Error("Could not create configuration for staging")
 			slog.Error(err.Error())
-			return
+			return err
 		}
 	} else {
 		// Cannot swap with production, delete staging
@@ -88,6 +93,7 @@ func HandleSwap(conf StepConfig) {
 	if err != nil {
 		slog.Error("Nginx test command failed")
 		slog.Error(err.Error())
+		return err
 	}
 
 	// Reset nginx
@@ -96,7 +102,10 @@ func HandleSwap(conf StepConfig) {
 	if err != nil {
 		slog.Error("Nginx restart command failed")
 		slog.Error(err.Error())
+		return err
 	}
+
+	return nil
 }
 
 func HandleDeployStaging(conf StepConfig) error {
@@ -313,6 +322,6 @@ func HandleHealthCheckProduction(conf StepConfig) bool {
 }
 
 func KillProcessOnPort(portString string) error {
-	err := exec.Command("sudo", "fuser", "-k", "-n", "tcp", portString).Run()
+	err := exec.Command("fuser", "-k", "-n", "tcp", portString).Run()
 	return err
 }

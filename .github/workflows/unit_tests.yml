@@ -19,4 +19,4 @@ jobs:
         go-version: "1.21.4"
 
     - name: Run tests
-      run: go test -v ./...
+      run: ./test.sh

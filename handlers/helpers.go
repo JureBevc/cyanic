@@ -133,13 +133,12 @@ func createNginxConfig(templatePath string, configName string, proxyPort string)
 }
 
 func testNginx() error {
-	err := exec.Command("sudo", "nginx", "-t").Run()
+	err := exec.Command("nginx", "-t").Run()
 	return err
 }
 
 func restartNginx() error {
-	//err := exec.Command("sudo", "systemctl", "restart", "nginx").Run()
-	err := exec.Command("sudo", "nginx", "-s", "reload").Run()
+	err := exec.Command("nginx", "-s", "reload").Run()
 	return err
 }
 
@@ -186,7 +185,7 @@ func runSetup(setupCommands []string, deployPort string) {
 }
 
 func isProcessRunningOnPort(portString string) bool {
-	err := exec.Command("sudo", "fuser", portString+"/tcp").Run()
+	err := exec.Command("fuser", portString+"/tcp").Run()
 	return err != nil
 }
 
