@@ -1,6 +1,6 @@
 module github.com/JureBevc/cyanic
 
-go 1.21
+go 1.21.4
 
 require github.com/goccy/go-yaml v1.11.2
 

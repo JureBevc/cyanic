@@ -19,4 +19,7 @@ jobs:
         go-version: "1.21"
 
     - name: Run tests
-      run: sudo ./test.sh
+      run: |
+        go clear -modcache
+        go mod download
+        sudo ./test.sh
