@@ -20,6 +20,6 @@ jobs:
 
     - name: Run tests
       run: |
-        go clear -modcache
+        go clean -modcache
         go mod download
         sudo ./test.sh
