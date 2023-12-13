@@ -10,6 +10,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    - run: sudo systemctl start nginx
+    - run: sudo systemctl status nginx
     - uses: actions/checkout@v4
     - name: Setup Go
       uses: actions/setup-go@v4
