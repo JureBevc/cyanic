@@ -162,7 +162,9 @@ func runSetup(setupCommands []string, deployPort string) {
 		return
 	}
 
-	shFile.WriteString("#!/bin/sh -ex\n")
+	shFile.WriteString("#!/bin/sh\n")
+	shFile.WriteString("set -e\n")
+	shFile.WriteString("set -x\n")
 	shFile.WriteString("export PORT=" + deployPort + "\n")
 
 	// Create script content
@@ -176,12 +178,17 @@ func runSetup(setupCommands []string, deployPort string) {
 	shFile.Close()
 
 	// Run script file
-	var commandError error
-	commandError = exec.Command(scriptFilePath, "&", "disown").Start()
+	setupCommand := exec.Command("nohup", scriptFilePath)
+	if err != nil {
+		slog.Error("Could not create stdout pipe", "err", err.Error())
+	}
+
+	commandError := setupCommand.Start()
 	if commandError != nil {
 		slog.Error("Error running setup script")
 		slog.Error(commandError.Error())
 	}
+
 }
 
 func isProcessRunningOnPort(portString string) bool {
@@ -199,9 +206,9 @@ func healthCheckPromise(healthCheckUrl string) *promise.Promise[bool] {
 			tryCount += 1
 			resp, err := http.Get(healthCheckUrl)
 			if err != nil {
-				slog.Info("Health check: " + err.Error())
+				slog.Info("Waiting for health check: " + err.Error())
 			} else {
-				slog.Info("Health check: Response code " + resp.Status)
+				slog.Info("Health check finished: Response code " + resp.Status)
 				if resp.StatusCode == 200 {
 					return true, nil
 				}
