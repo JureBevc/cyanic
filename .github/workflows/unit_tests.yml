@@ -20,6 +20,17 @@ jobs:
     - uses: actions/setup-python@v5
       with:
         python-version: '3.11.6' 
+
+    - name: Python test
+      run: |
+        export PORT=8123
+        echo "Deploying to port $PORT..."
+        cd ./examples/python-server
+        python3 -m venv .venv
+        source .venv/bin/activate
+        pip install -r requirements.txt
+        python app.py
+
     - name: Install dependencies
       run: go get .
     - name: Build
